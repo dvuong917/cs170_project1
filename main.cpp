@@ -9,7 +9,8 @@ struct Node {
     int matrix[N][N];
     Node *next = nullptr;
     Node *prev = nullptr;
-    int x, y; // stores coordinates of blank space
+    // store coordinates of blank space
+    int x, y; // x = row, y = col
 };
 
 queue<Node> nodesQueue;
@@ -27,17 +28,25 @@ int goalState[N][N] = {
 };
 
 // define operators
-void moveBlankLeft(int matrix[N][N]) {
-
+void moveBlankLeft(int matrix[N][N], int x, int y) {
+    if (y != 0) {
+        matrix[x][y] = matrix[x][y-1];
+    }
 };
-void moveBlankRight(int matrix[N][N]) {
-
+void moveBlankRight(int matrix[N][N], int x, int y) {
+    if (y != N-1) {
+        matrix[x][y] = matrix[x][y+1];
+    }
 };
-void moveBlankUp(int matrix[N][N]) {
-
+void moveBlankUp(int matrix[N][N], int x, int y) {
+    if (x != 0) {
+        matrix[x][y] = matrix[x-1][y];
+    }
 };
-void moveBlankDown(int matrix[N][N]) {
-
+void moveBlankDown(int matrix[N][N], int x, int y) {
+    if (x != N-1) {
+        matrix[x][y] = matrix[x+1][y];
+    }
 };
 
 void printMatrix(int matrix[N][N]) {
