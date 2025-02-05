@@ -1,4 +1,5 @@
 import heapq
+import copy
 
 n = 3
 
@@ -14,40 +15,44 @@ def moveBlankLeft(puzzle):
     blank = findBlank(puzzle)
     row, col = blank
     if col > 0:
-        temp = puzzle[row][col]
-        puzzle[row][col] = puzzle[row][col-1]
-        puzzle[row][col-1] = temp
-        return puzzle
+        newPuzzle = copy.deepcopy(puzzle)
+        temp = newPuzzle[row][col]
+        newPuzzle[row][col] = newPuzzle[row][col-1]
+        newPuzzle[row][col-1] = temp
+        return newPuzzle
     else:
         return None
 def moveBlankRight(puzzle):
     blank = findBlank(puzzle)
     row, col = blank
     if col < n-1:
-        temp = puzzle[row][col]
-        puzzle[row][col] = puzzle[row][col+1]
-        puzzle[row][col+1] = temp
-        return puzzle
+        newPuzzle = copy.deepcopy(puzzle)
+        temp = newPuzzle[row][col]
+        newPuzzle[row][col] = newPuzzle[row][col+1]
+        newPuzzle[row][col+1] = temp
+        return newPuzzle
     else:
         return None
 def moveBlankUp(puzzle):
     blank = findBlank(puzzle)
     row, col = blank
     if row > 0:
-        temp = puzzle[row][col]
-        puzzle[row][col] = puzzle[row-1][col]
-        puzzle[row-1][col] = temp
-        return puzzle
+        newPuzzle = copy.deepcopy(puzzle)
+        temp = newPuzzle[row][col]
+        newPuzzle[row][col] = newPuzzle[row-1][col]
+        newPuzzle[row-1][col] = temp
+        return newPuzzle
     else:
         return None
 def moveBlankDown(puzzle):
     blank = findBlank(puzzle)
     row, col = blank
     if row < n-1:
-        temp = puzzle[row][col]
-        puzzle[row][col] = puzzle[row+1][col]
-        puzzle[row+1][col] = temp
-        return puzzle
+        newPuzzle = copy.deepcopy(puzzle)
+        temp = newPuzzle[row][col]
+        newPuzzle[row][col] = newPuzzle[row+1][col]
+        newPuzzle[row+1][col] = temp
+        return newPuzzle
     else:
         return None
 
@@ -68,28 +73,72 @@ class Node:
         return False
     def puzzle_to_tuple(self):
         puzzleTuple = tuple(tuple(row) for row in self.puzzle)
-        print(puzzleTuple)
         return puzzleTuple
+    def __lt__(self, other):
+        return (self.cost < other.cost)
     
-def expand(node, dict): 
-    if (moveBlankLeft(node.puzzle) and moveBlankLeft(node.puzzle) not in dict):
-        child1 = Node(node, moveBlankLeft(node.puzzle), 0, node.depth+1)
-    if (moveBlankRight(node.puzzle) and moveBlankRight(node.puzzle) not in dict):
-        child2 = Node(node, moveBlankRight(node.puzzle), 0, node.depth+1)
-    if (moveBlankUp(node.puzzle) and moveBlankUp(node.puzzle) not in dict):
-        child3 = Node(node, moveBlankUp(node.puzzle), 0, node.depth+1)
-    if (moveBlankDown(node.puzzle) and moveBlankDown(node.puzzle) not in dict):
-        child4 = Node(node, moveBlankDown(node.puzzle), 0, node.depth+1)
+def expand(node, repeatSet): 
+    print("parent:")
+    printPuzzle(node.puzzle)
+    children = []
+    possibleMoves = [moveBlankLeft, moveBlankRight, moveBlankUp, moveBlankDown]
+    for move in possibleMoves:
+        newPuzzle = move(node.puzzle)
+        if (newPuzzle):
+            child = Node(node, newPuzzle, 0, node.depth+1)
+            newTuple = child.puzzle_to_tuple()
+            if (newTuple not in repeatSet):
+                children.append(child)
+                repeatSet.add(newTuple)
+                print("child:")
+                printPuzzle(newPuzzle)
+            else:
+                print("repeat child")
+
+    # print("Children created: ")
+    # for child in children:
+    #     printPuzzle(child.puzzle)
+    return children
+    
+def heuristic(depth, choice):
+    if choice == 1: # uniform cost
+        return depth
+    elif choice == 2: # misplaced tile
+        return depth + misplacedTile
+    else: # manhattan distance
+        return depth + manhattanDistance
 
 def uniformCost(puzzle):
     starting_node = Node(None, puzzle, 0, 0)
     working_queue = []
-    repeated_states = dict()
+    repeated_states = set()
     heapq.heappush(working_queue, starting_node)
     num_nodes_expanded = 0
     max_queue_size = 0
-    repeated_states[starting_node.puzzle_to_tuple()] = "parent"
-    print(list(repeated_states))
+    stack_to_print = [] # the board states are stored in a stack
+
+    while len(working_queue) > 0:
+        max_queue_size = max(len(working_queue), max_queue_size)
+        # the node from the queue being considered/checked
+        node_from_queue = heapq.heappop(working_queue)
+        repeated_states.add(node_from_queue.puzzle_to_tuple())
+        if node_from_queue.solved():
+            print("SOLVED!")
+            print("Number of nodes expanded:", num_nodes_expanded)
+            print("Max queue size:", max_queue_size)
+            return node_from_queue
+        else:
+            for child in expand(node_from_queue, repeated_states):
+                child.depth = node_from_queue.depth + 1
+                child.cost = heuristic(node_from_queue.depth, 1)
+                heapq.heappush(working_queue, child)
+
+# Do not count the blank
+def misplacedTile(puzzle):
+    starting_node = Node(None, puzzle, 0, 0)
+
+def manhattanDistance(puzzle):
+    starting_node = Node(None, puzzle, 0, 0)
 
 # Test Cases
 depth0 = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
@@ -100,7 +149,7 @@ depth12 = [[1, 3, 6], [5, 0, 7], [4, 8, 2]]
 depth16 = [[1, 6, 7], [5, 0, 3], [4, 8, 2]]
 depth20 = [[7, 1, 2], [4, 8, 5], [6, 3, 0]]
 depth24 = [[0, 7, 2], [4, 6, 1], [3, 5, 8]]
-
+testDepth2Repeat = [[1, 2, 3], [0, 5, 6], [4, 7, 8]]
 menuOn = True
 while menuOn:
     choice = int(input("Select an algorithm. (1) Uniform Cost Search, (2) Misplaced Tile Heuristic, (3) Manhattan Distance Heuristic.\n"))
