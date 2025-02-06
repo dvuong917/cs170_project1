@@ -189,31 +189,54 @@ depth20 = [[7, 1, 2], [4, 8, 5], [6, 3, 0]]
 depth24 = [[0, 7, 2], [4, 6, 1], [3, 5, 8]]
 test = [[1, 2, 4], [3, 0, 6], [7, 8, 5]]
 
-def puzzleMenu():
+def selectPuzzleMenu():
+    menuOn = True
+    while menuOn:
+        choice = int(input("Type '1' to use a default puzzle, or '2' to create your own.\n"))
+        if choice == 1:
+            return defaultPuzzleMenu()
+        elif choice == 2:
+            return createPuzzle()
+        else:
+            print("Invalid choice.")
+            menuOn = True
+
+def createPuzzle():
+    print("Enter your puzzle, using a zero to represent the blank. " + 
+        "Please only enter valid 8-puzzles. Enter the puzzle demilimiting " + 
+        "the numbers with a space. RET only when finished." + '\n')
+    puzzle_row_one = input("Enter the first row: ")
+    puzzle_row_two = input("Enter the second row: ")
+    puzzle_row_three = input("Enter the third row: ")
+    puzzle_row_one = puzzle_row_one.split()
+    puzzle_row_two = puzzle_row_two.split()
+    puzzle_row_three = puzzle_row_three.split()
+    for i in range(0, 3):
+        puzzle_row_one[i] = int(puzzle_row_one[i])
+        puzzle_row_two[i] = int(puzzle_row_two[i])
+        puzzle_row_three[i] = int(puzzle_row_three[i])
+    userPuzzle = [puzzle_row_one, puzzle_row_two, puzzle_row_three]
+    print()
+    return userPuzzle
+
+def defaultPuzzleMenu():
     menuOn = True
     while menuOn:
         choice = int(input("Select a puzzle: (1) Depth 2, (2) Depth 4, (3) Depth 8, (4) Depth 12, (5) Depth 16, (6) Depth 20, (7) Depth 24.\n"))
         if choice == 1:
             return depth2
-            menuOn = False
         elif choice == 2:
             return depth4
-            menuOn = False
         elif choice == 3:
             return depth8
-            menuOn = False
         elif choice == 4:
             return depth12
-            menuOn = False
         elif choice == 5:
             return depth16
-            menuOn = False
         elif choice == 6:
             return depth20
-            menuOn = False
         elif choice == 7:
             return depth24
-            menuOn = False
         else:
             print("Invalid choice.")
             menuOn = True            
@@ -235,5 +258,5 @@ def searchMenu(puzzle):
             print("Invalid choice.")
             menuOn = True
 
-puzzle = puzzleMenu()
+puzzle = selectPuzzleMenu()
 searchMenu(puzzle)
