@@ -78,8 +78,8 @@ class Node:
         return (self.cost < other.cost)
     
 def expand(node, repeatSet): 
-    print("parent:")
-    printPuzzle(node.puzzle)
+    #print("parent:")
+    #printPuzzle(node.puzzle)
     children = []
     possibleMoves = [moveBlankLeft, moveBlankRight, moveBlankUp, moveBlankDown]
     for move in possibleMoves:
@@ -90,10 +90,10 @@ def expand(node, repeatSet):
             if (newTuple not in repeatSet):
                 children.append(child)
                 repeatSet.add(newTuple)
-                print("child:")
-                printPuzzle(newPuzzle)
-            else:
-                print("repeat child")
+                #print("child:")
+                #printPuzzle(newPuzzle)
+            #else:
+                #print("repeat child")
 
     # print("Children created: ")
     # for child in children:
@@ -115,7 +115,8 @@ def uniformCost(puzzle):
     heapq.heappush(working_queue, starting_node)
     num_nodes_expanded = 0
     max_queue_size = 0
-    stack_to_print = [] # the board states are stored in a stack
+    solutionPath = []
+    solutionDepth = 0
 
     while len(working_queue) > 0:
         max_queue_size = max(len(working_queue), max_queue_size)
@@ -124,6 +125,15 @@ def uniformCost(puzzle):
         repeated_states.add(node_from_queue.puzzle_to_tuple())
         if node_from_queue.solved():
             print("SOLVED!")
+            solutionDepth = node_from_queue.depth
+            curr = node_from_queue
+            while(curr != None):
+                solutionPath.append(curr.puzzle)
+                curr = curr.parent
+            solutionPath.reverse()
+            for nodePuzzle in solutionPath:
+                printPuzzle(nodePuzzle)
+            print("Solution depth:", solutionDepth)
             print("Number of nodes expanded:", num_nodes_expanded)
             print("Max queue size:", max_queue_size)
             return node_from_queue
@@ -132,6 +142,8 @@ def uniformCost(puzzle):
                 child.depth = node_from_queue.depth + 1
                 child.cost = heuristic(node_from_queue.depth, 1)
                 heapq.heappush(working_queue, child)
+            num_nodes_expanded += 1
+
 
 # Do not count the blank
 def misplacedTile(puzzle):
