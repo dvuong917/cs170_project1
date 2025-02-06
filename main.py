@@ -74,10 +74,11 @@ class Node:
     def puzzle_to_tuple(self):
         puzzleTuple = tuple(tuple(row) for row in self.puzzle)
         return puzzleTuple
+    # Needed because heapq needs to compare nodes and pick the lower cost one
     def __lt__(self, other):
         return (self.cost < other.cost)
     
-def expand(node, repeatSet): 
+def expand(node, repeatedStates): 
     #print("parent:")
     #printPuzzle(node.puzzle)
     children = []
@@ -87,13 +88,19 @@ def expand(node, repeatSet):
         if (newPuzzle):
             child = Node(node, newPuzzle, 0, node.depth+1)
             newTuple = child.puzzle_to_tuple()
-            if (newTuple not in repeatSet):
+            if (newTuple not in repeatedStates):
                 children.append(child)
-                repeatSet.add(newTuple)
+                repeatedStates[child.puzzle_to_tuple()] = child.depth
                 #print("child:")
                 #printPuzzle(newPuzzle)
-            #else:
-                #print("repeat child")
+            # If child is repeated state, check if its dept is lower than the repeated state in dict
+            # If so, replace repeatedStates with better depth and add child
+            elif ((newTuple in repeatedStates) and (child.depth < repeatedStates.get(newTuple))):
+                repeatedStates[newTuple] = child.depth
+                children.append(child)
+            # else:
+            #     print("Repeat child")
+                
 
     # print("Children created: ")
     # for child in children:
@@ -111,18 +118,24 @@ def heuristic(node, choice):
 def search(puzzle, option):
     starting_node = Node(None, puzzle, 0, 0)
     working_queue = []
-    repeated_states = set()
+    repeated_states = dict()
     heapq.heappush(working_queue, starting_node)
     num_nodes_expanded = 0
     max_queue_size = 0
     solutionPath = []
     solutionDepth = 0
+    repeated_states[starting_node.puzzle_to_tuple()] = starting_node.depth
 
     while len(working_queue) > 0:
         max_queue_size = max(len(working_queue), max_queue_size)
         # the node from the queue being considered/checked
         node_from_queue = heapq.heappop(working_queue)
-        repeated_states.add(node_from_queue.puzzle_to_tuple())
+        if (option == 1):
+            print("The best state to expand with g(n) = ", node_from_queue.depth, " and h(n) = 0 is...")
+        elif (option == 2 or option == 3):
+            print("The best state to expand with g(n) = ", node_from_queue.depth, " and h(n) = ", heuristic(node_from_queue, option), " is...")
+        printPuzzle(node_from_queue.puzzle)
+        repeated_states[node_from_queue.puzzle_to_tuple()] = node_from_queue.depth #store puzzle tuple + depth
         if node_from_queue.solved():
             print("\nSolution Path:")
             solutionDepth = node_from_queue.depth
@@ -139,7 +152,6 @@ def search(puzzle, option):
             return node_from_queue
         else:
             for child in expand(node_from_queue, repeated_states):
-                child.depth = node_from_queue.depth + 1
                 child.cost = child.depth + heuristic(child, option)
                 heapq.heappush(working_queue, child)
             num_nodes_expanded += 1
