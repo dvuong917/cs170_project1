@@ -100,13 +100,13 @@ def expand(node, repeatSet):
     #     printPuzzle(child.puzzle)
     return children
     
-def heuristic(depth, choice):
+def heuristic(node, choice):
     if choice == 1: # uniform cost
-        return depth
+        return node.depth
     elif choice == 2: # misplaced tile
-        return depth + misplacedTile
+        return node.depth + numMisplaced(node.puzzle)
     else: # manhattan distance
-        return depth + manhattanDistance
+        return node.depth + distance(node.puzzle)
 
 def uniformCost(puzzle):
     starting_node = Node(None, puzzle, 0, 0)
@@ -139,18 +139,33 @@ def uniformCost(puzzle):
             return node_from_queue
         else:
             for child in expand(node_from_queue, repeated_states):
+                child.cost = heuristic(node_from_queue, 1)
                 child.depth = node_from_queue.depth + 1
-                child.cost = heuristic(node_from_queue.depth, 1)
                 heapq.heappush(working_queue, child)
             num_nodes_expanded += 1
 
 
 # Do not count the blank
-def misplacedTile(puzzle):
-    starting_node = Node(None, puzzle, 0, 0)
+def numMisplaced(puzzle):
+    numTiles = 0
+    blank = findBlank(puzzle)
+    row, col = blank
+    print("row, col: ", row, col)
+    check = 1 # goes from 1 to 8, used to check if 1-8 is in right place in puzzle
+    for i in range(n):
+        for j in range(n):
+            if ((i, j) != (row, col)):
+                if (puzzle[i][j] != check):
+                    print("Checking ", check)
+                    print("at ", i, j)
+                    print("with ", puzzle[i][j])
+                    numTiles += 1
+                    check += 1
+    print("Number of misplaced tiles: ", numTiles)
+    return numTiles
 
-def manhattanDistance(puzzle):
-    starting_node = Node(None, puzzle, 0, 0)
+def distance(puzzle):
+    return 1
 
 # Test Cases
 depth0 = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
@@ -166,7 +181,8 @@ menuOn = True
 while menuOn:
     choice = int(input("Select an algorithm. (1) Uniform Cost Search, (2) Misplaced Tile Heuristic, (3) Manhattan Distance Heuristic.\n"))
     if choice == 1:
-        uniformCost(depth2)
+        #uniformCost(depth2)
+        numMisplaced(depth2)
         menuOn = False
     elif choice == 2:
         print("Choice 2")
