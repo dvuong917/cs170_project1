@@ -104,11 +104,11 @@ def heuristic(node, choice):
     if choice == 1: # uniform cost
         return node.depth
     elif choice == 2: # misplaced tile
-        return node.depth + numMisplaced(node.puzzle)
+        return numMisplaced(node.puzzle)
     else: # manhattan distance
-        return node.depth + distance(node.puzzle)
+        return distance(node.puzzle)
 
-def uniformCost(puzzle):
+def search(puzzle, option):
     starting_node = Node(None, puzzle, 0, 0)
     working_queue = []
     repeated_states = set()
@@ -124,7 +124,7 @@ def uniformCost(puzzle):
         node_from_queue = heapq.heappop(working_queue)
         repeated_states.add(node_from_queue.puzzle_to_tuple())
         if node_from_queue.solved():
-            print("SOLVED!")
+            print("\nSolution Path:")
             solutionDepth = node_from_queue.depth
             curr = node_from_queue
             while(curr != None):
@@ -139,33 +139,44 @@ def uniformCost(puzzle):
             return node_from_queue
         else:
             for child in expand(node_from_queue, repeated_states):
-                child.cost = heuristic(node_from_queue, 1)
                 child.depth = node_from_queue.depth + 1
+                child.cost = child.depth + heuristic(child, option)
                 heapq.heappush(working_queue, child)
             num_nodes_expanded += 1
 
 
 # Do not count the blank
 def numMisplaced(puzzle):
+    goal = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
     numTiles = 0
-    blank = findBlank(puzzle)
-    row, col = blank
-    print("row, col: ", row, col)
-    check = 1 # goes from 1 to 8, used to check if 1-8 is in right place in puzzle
-    for i in range(n):
-        for j in range(n):
-            if ((i, j) != (row, col)):
-                if (puzzle[i][j] != check):
-                    print("Checking ", check)
-                    print("at ", i, j)
-                    print("with ", puzzle[i][j])
-                    numTiles += 1
-                    check += 1
-    print("Number of misplaced tiles: ", numTiles)
+    for i in range(0, n):
+        for j in range(0, n):
+            #print("Checking", goal[i][j], "with", puzzle[i][j])
+            if (puzzle[i][j] != 0 and goal[i][j] != puzzle[i][j]): # Ignore blank tile and check if tile is in correct location
+                numTiles += 1
+    #print("Number of misplaced tiles: ", numTiles)
     return numTiles
 
+def findNum(puzzle, num):
+    for i in range(n):
+        for j in range(n):
+            if puzzle[i][j] == num:
+                return (i, j)
+    return None
+
 def distance(puzzle):
-    return 1
+    goal = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
+    distance = 0
+    for i in range(0, n):
+        for j in range(0, n):
+            if (puzzle[i][j] != 0 and goal[i][j] != puzzle[i][j]): # Ignore blank tile and check if tile is in correct location
+                puzzleRow, puzzleCol = findNum(puzzle, puzzle[i][j])
+                goalRow, goalCol = findNum(goal, puzzle[i][j])
+                #print("puzzle coords: ", puzzleRow, puzzleCol)
+                #print("goal coords: ", goalRow, goalCol)
+                distance += (abs(goalRow-puzzleRow) + abs(goalCol-puzzleCol))
+    #print("Distance: ", distance)
+    return distance
 
 # Test Cases
 depth0 = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
@@ -176,20 +187,53 @@ depth12 = [[1, 3, 6], [5, 0, 7], [4, 8, 2]]
 depth16 = [[1, 6, 7], [5, 0, 3], [4, 8, 2]]
 depth20 = [[7, 1, 2], [4, 8, 5], [6, 3, 0]]
 depth24 = [[0, 7, 2], [4, 6, 1], [3, 5, 8]]
-testDepth2Repeat = [[1, 2, 3], [0, 5, 6], [4, 7, 8]]
-menuOn = True
-while menuOn:
-    choice = int(input("Select an algorithm. (1) Uniform Cost Search, (2) Misplaced Tile Heuristic, (3) Manhattan Distance Heuristic.\n"))
-    if choice == 1:
-        #uniformCost(depth2)
-        numMisplaced(depth2)
-        menuOn = False
-    elif choice == 2:
-        print("Choice 2")
-        menuOn = False
-    elif choice == 3:
-        print("Choice 3")
-        menuOn = False
-    else:
-        print("Invalid choice.")
-        menuOn = True
+test = [[1, 2, 4], [3, 0, 6], [7, 8, 5]]
+
+def puzzleMenu():
+    menuOn = True
+    while menuOn:
+        choice = int(input("Select a puzzle: (1) Depth 2, (2) Depth 4, (3) Depth 8, (4) Depth 12, (5) Depth 16, (6) Depth 20, (7) Depth 24.\n"))
+        if choice == 1:
+            return depth2
+            menuOn = False
+        elif choice == 2:
+            return depth4
+            menuOn = False
+        elif choice == 3:
+            return depth8
+            menuOn = False
+        elif choice == 4:
+            return depth12
+            menuOn = False
+        elif choice == 5:
+            return depth16
+            menuOn = False
+        elif choice == 6:
+            return depth20
+            menuOn = False
+        elif choice == 7:
+            return depth24
+            menuOn = False
+        else:
+            print("Invalid choice.")
+            menuOn = True            
+
+def searchMenu(puzzle):
+    menuOn = True
+    while menuOn:
+        choice = int(input("Select an algorithm. (1) Uniform Cost Search, (2) Misplaced Tile Heuristic, (3) Manhattan Distance Heuristic.\n"))
+        if choice == 1:
+            search(puzzle, 1)
+            menuOn = False
+        elif choice == 2:
+            search(puzzle, 2)
+            menuOn = False
+        elif choice == 3:
+            search(puzzle, 3)
+            menuOn = False
+        else:
+            print("Invalid choice.")
+            menuOn = True
+
+puzzle = puzzleMenu()
+searchMenu(puzzle)
