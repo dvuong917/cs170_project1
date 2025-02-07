@@ -126,6 +126,7 @@ def search(puzzle, option):
     solutionDepth = 0
     repeated_states[starting_node.puzzle_to_tuple()] = starting_node.depth
 
+    print("\n========== TRACEBACK ==========")
     while len(working_queue) > 0:
         max_queue_size = max(len(working_queue), max_queue_size)
         # the node from the queue being considered/checked
@@ -137,7 +138,7 @@ def search(puzzle, option):
         printPuzzle(node_from_queue.puzzle)
         repeated_states[node_from_queue.puzzle_to_tuple()] = node_from_queue.depth #store puzzle tuple + depth
         if node_from_queue.solved():
-            print("\nSolution Path:")
+            print("\n========== Solution Path ==========")
             solutionDepth = node_from_queue.depth
             curr = node_from_queue
             while(curr != None):
