@@ -216,8 +216,8 @@ def selectPuzzleMenu():
 
 def createPuzzle():
     print("Enter your puzzle, using a zero to represent the blank. " + 
-        "Please only enter valid 8-puzzles. Enter the puzzle demilimiting " + 
-        "the numbers with a space. RET only when finished." + '\n')
+        "Please only enter valid 8-puzzles. Seperate the numbers with a space. " + 
+        "RET only when finished." + '\n')
     puzzle_row_one = input("Enter the first row: ")
     puzzle_row_two = input("Enter the second row: ")
     puzzle_row_three = input("Enter the third row: ")
